@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iNaturalist Explorer</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4CAF50">
     <link rel="apple-touch-icon" href="icon-192x192.png">
 </head>
@@ -20,7 +20,7 @@
         <div id="results" class="hidden"></div>
         <button id="continueSearch" class="hidden">Load More</button>
     </div>
-    <script src="script.js"></script>
+    <script src="/iNat/script.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/service-worker.js')
