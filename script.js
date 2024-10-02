@@ -26,6 +26,7 @@ function performSearch(newSearch) {
             currentPage = 1;
             currentSearchTerm = searchTerm;
             currentCategory = category;
+            resultsDiv.innerHTML = ""; // Clear previous results on new search
         } else {
             currentPage++;
         }
@@ -35,13 +36,9 @@ function performSearch(newSearch) {
 
 async function searchiNaturalist(term, category, page) {
     showLoading(true);
-    if (page === 1) {
-        resultsDiv.classList.add("hidden");
-        resultsDiv.innerHTML = "";
-    }
     let apiUrl = `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(term)}&per_page=5&page=${page}`;
     
-    if (category) {
+    if (category && category !== "All Categories") {
         apiUrl += `&iconic_taxa=${encodeURIComponent(category)}`;
     }
 
@@ -65,7 +62,7 @@ async function searchiNaturalist(term, category, page) {
         }
         const data = await response.json();
         displayResults(data.results, page === 1);
-        continueSearchButton.classList.remove('hidden');
+        continueSearchButton.classList.toggle('hidden', data.results.length === 0);
     } catch (error) {
         console.error("Error fetching data:", error);
         resultsDiv.innerHTML += `<p>${error.message}</p>`;
@@ -161,7 +158,7 @@ function createPostcard(commonName, scientificName, imageUrl, category) {
         // Create download link
         const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
-        link.download = `${commonName.replace(/\s+/g, '_')}_postcard.png`;
+        link.download = `${commonName.replace(/\s+/g, '_')}_card.png`;
         link.href = dataUrl;
         link.click();
     };
