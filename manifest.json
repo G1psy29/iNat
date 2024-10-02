@@ -2,7 +2,7 @@
   "name": "iNaturalist Explorer",
   "short_name": "iNatExplorer",
   "description": "Explore species information from iNaturalist",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
