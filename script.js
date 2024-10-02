@@ -1,72 +1,32 @@
-// DOM elements
 const searchInput = document.getElementById('search');
+const categoryFilter = document.getElementById('categoryFilter');
 const searchButton = document.getElementById('searchButton');
 const resultsDiv = document.getElementById('results');
 const loadingDiv = document.getElementById('loading');
 const continueSearchButton = document.getElementById('continueSearch');
-const customSelect = document.querySelector('.custom-select');
-const selectSelected = customSelect ? customSelect.querySelector('.select-selected') : null;
-const selectItems = customSelect ? customSelect.querySelector('.select-items') : null;
 
-// Variables
 let currentPage = 1;
 let currentSearchTerm = '';
-let currentRankLevel = 0;
+let currentRankLevel = '';
 let lastRequestTime = 0;
 
-// Error checking
-if (!searchInput || !searchButton || !resultsDiv || !loadingDiv || !continueSearchButton || !customSelect || !selectSelected || !selectItems) {
-    console.error('One or more required DOM elements are missing');
-}
-
-// Custom dropdown functionality
-if (selectSelected && selectItems) {
-    selectSelected.addEventListener('click', function(e) {
-        e.stopPropagation();
-        selectItems.classList.toggle('select-hide');
-        this.classList.toggle('select-arrow-active');
-    });
-
-    selectItems.addEventListener('click', function(e) {
-        if (e.target.tagName === 'DIV') {
-            selectSelected.innerHTML = e.target.innerHTML;
-            currentRankLevel = parseInt(e.target.getAttribute('data-value'));
-            this.classList.add('select-hide');
-        }
-    });
-
-    document.addEventListener('click', function() {
-        selectItems.classList.add('select-hide');
-        selectSelected.classList.remove('select-arrow-active');
-    });
-}
-
-// Event listeners
-if (searchButton) {
-    searchButton.addEventListener('click', () => performSearch(true));
-}
-
-if (searchInput) {
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            performSearch(true);
-        }
-    });
-}
-
-if (continueSearchButton) {
-    continueSearchButton.addEventListener('click', () => performSearch(false));
-}
+searchButton.addEventListener('click', () => performSearch(true));
+searchInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        performSearch(true);
+    }
+});
+continueSearchButton.addEventListener('click', () => performSearch(false));
 
 function performSearch(newSearch) {
-    if (!searchInput) return;
     const searchTerm = searchInput.value.trim();
-    
+    const rankLevel = categoryFilter.value;
     if (searchTerm) {
         if (newSearch) {
             currentPage = 1;
             currentSearchTerm = searchTerm;
-            if (resultsDiv) resultsDiv.innerHTML = "";
+            currentRankLevel = rankLevel;
+            resultsDiv.innerHTML = ""; // Clear previous results on new search
         } else {
             currentPage++;
         }
@@ -75,23 +35,12 @@ function performSearch(newSearch) {
 }
 
 async function searchiNaturalist(term, rankLevel, page) {
-    if (!loadingDiv || !continueSearchButton || !resultsDiv) return;
-
     showLoading(true);
-    let apiUrl = new URL('https://api.inaturalist.org/v1/taxa');
-    let params = new URLSearchParams({
-        q: term,
-        per_page: 5,
-        page: page,
-        quality_grade: 'research',
-        identifications: 'any'
-    });
-
-    if (rankLevel > 0) {
-        params.append('rank_level', rankLevel);
+    let apiUrl = `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(term)}&per_page=5&page=${page}`;
+    
+    if (rankLevel) {
+        apiUrl += `&rank_level=${encodeURIComponent(rankLevel)}`;
     }
-
-    apiUrl.search = params.toString();
 
     // Implement rate limiting
     const now = Date.now();
@@ -124,8 +73,6 @@ async function searchiNaturalist(term, rankLevel, page) {
 }
 
 function displayResults(results, clearPrevious) {
-    if (!resultsDiv) return;
-
     if (clearPrevious) {
         resultsDiv.innerHTML = "";
     }
@@ -133,7 +80,7 @@ function displayResults(results, clearPrevious) {
 
     if (results.length === 0) {
         resultsDiv.innerHTML += "<p>No results found.</p>";
-        if (continueSearchButton) continueSearchButton.classList.add('hidden');
+        continueSearchButton.classList.add('hidden');
         return;
     }
 
@@ -145,15 +92,15 @@ function displayResults(results, clearPrevious) {
 
         const speciesDiv = document.createElement('div');
         speciesDiv.classList.add('species');
-        speciesDiv.innerHTML = `
+        speciesDiv.innerHTML = `    
             <img src="${photoUrl}" alt="${commonName}" crossorigin="anonymous">
             <div class="species-info">
-                <h3>${commonName}</h3>
-                <p><em>${scientificName}</em></p>
-                <p>Rank: ${rank}</p>
-                <button class="download-btn">Download Postcard</button>
+             <h3>${commonName}</h3>
+             <p><em>${scientificName}</em></p>
+             <p class="rank">Rank: ${rank}</p>
+            <button class="download-btn">Download Postcard</button>
             </div>
-        `;
+`;
 
         speciesDiv.querySelector('.download-btn').addEventListener('click', (e) => {
             e.stopPropagation();
@@ -164,14 +111,6 @@ function displayResults(results, clearPrevious) {
     });
 }
 
-function showLoading(isLoading) {
-    if (loadingDiv) loadingDiv.classList.toggle('hidden', !isLoading);
-    if (searchButton) searchButton.disabled = isLoading;
-    if (continueSearchButton) continueSearchButton.disabled = isLoading;
-}
-
-// The createPostcard function remains unchanged
-
 function createPostcard(commonName, scientificName, imageUrl) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -180,7 +119,7 @@ function createPostcard(commonName, scientificName, imageUrl) {
     image.onload = () => {
         canvas.width = 600;
         canvas.height = 400;
-        
+
         // Draw background
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);

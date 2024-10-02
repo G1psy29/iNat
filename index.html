@@ -12,21 +12,19 @@
         <h1>iNaturalist Explorer</h1>
         <div class="search-container">
             <input type="text" id="search" placeholder="Search species...">
-            <div class="custom-select">
-                <div class="select-selected">All Ranks</div>
-                <div class="select-items select-hide">
-                    <div data-value="0">All Ranks</div>
-                    <div data-value="70">Kingdom</div>
-                    <div data-value="60">Phylum</div>
-                    <div data-value="50">Class</div>
-                    <div data-value="40">Order</div>
-                    <div data-value="30">Family</div>
-                    <div data-value="20">Genus</div>
-                    <div data-value="10">Species</div>
-                </div>
-            </div>
+            <select id="categoryFilter">
+                <option value="">All Ranks</option>
+                <option value="70">Kingdom</option>
+                <option value="60">Phylum</option>
+                <option value="50">Class</option>
+                <option value="40">Order</option>
+                <option value="30">Family</option>
+                <option value="20">Genus</option>
+                <option value="10">Species</option>
+            </select>
             <button id="searchButton">Search</button>
         </div>
+    
         <div id="loading" class="hidden">Searching...</div>
         <div id="results" class="hidden"></div>
         <button id="continueSearch" class="hidden">Load More</button>
