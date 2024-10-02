@@ -4,16 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iNaturalist Explorer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css">
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#4CAF50">
-    <link rel="apple-touch-icon" href="./icon-192x192.jpg">
 </head>
 <body>
     <div class="container">
         <h1>iNaturalist Explorer</h1>
         <div class="search-container">
-            <input type="text" id="search" placeholder="Search for a species..." aria-label="Search for a species">
+            <input type="text" id="search" placeholder="Search species...">
+            <div class="custom-select">
+                <div class="select-selected">All Ranks</div>
+                <div class="select-items select-hide">
+                    <div data-value="0">All Ranks</div>
+                    <div data-value="70">Kingdom</div>
+                    <div data-value="60">Phylum</div>
+                    <div data-value="50">Class</div>
+                    <div data-value="40">Order</div>
+                    <div data-value="30">Family</div>
+                    <div data-value="20">Genus</div>
+                    <div data-value="10">Species</div>
+                </div>
+            </div>
             <button id="searchButton">Search</button>
         </div>
         <div id="loading" class="hidden">Searching...</div>
@@ -21,12 +32,5 @@
         <button id="continueSearch" class="hidden">Load More</button>
     </div>
     <script src="./script.js"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./service-worker.js')
-                .then((reg) => console.log('Service worker registered', reg))
-                .catch((err) => console.log('Service worker not registered', err));
-        }
-    </script>
 </body>
 </html>
