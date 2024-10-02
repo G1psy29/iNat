@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iNaturalist Explorer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+</head>
+<body>
+    <div class="container">
+        <h1>iNaturalist Explorer</h1>
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Search for a species..." aria-label="Search for a species">
+            <button id="searchButton">Search</button>
+        </div>
+        <div id="loading" class="hidden">Searching...</div>
+        <div id="results" class="hidden"></div>
+        <button id="continueSearch" class="hidden">Load More</button>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then((reg) => console.log('Service worker registered', reg))
+                .catch((err) => console.log('Service worker not registered', err));
+        }
+    </script>
+</body>
+</html>
