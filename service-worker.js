@@ -1,11 +1,11 @@
-const CACHE_NAME = 'inaturalist-explorer-gp';
+const CACHE_NAME = 'inaturalist-explorer-00';
 const urlsToCache = [
   './',
   './index.html',
   './style.css',
   './script.js',
-  './icon-192x192.png',
-  './icon-512x512.png'
+  './icon-192x192.jpg',
+  './icon-512x512.jpg'
 ];
 
 self.addEventListener('install', (event) => {
