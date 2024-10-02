@@ -6,6 +6,7 @@ const continueSearchButton = document.getElementById('continueSearch');
 
 let currentPage = 1;
 let currentSearchTerm = '';
+let lastRequestTime = 0;
 
 searchButton.addEventListener('click', () => performSearch(true));
 searchInput.addEventListener('keypress', (e) => {
@@ -36,9 +37,22 @@ async function searchiNaturalist(term, page) {
     }
     const apiUrl = `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(term)}&per_page=5&page=${page}`;
 
+    // Implement rate limiting
+    const now = Date.now();
+    const timeToWait = Math.max(0, 1000 - (now - lastRequestTime));
+    await new Promise(resolve => setTimeout(resolve, timeToWait));
+    lastRequestTime = Date.now();
+
     try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl, {
+            headers: {
+                'User-Agent': 'iNaturalistExplorer/1.0 (https://github.com/G1psy29/iNat)'
+            }
+        });
         if (!response.ok) {
+            if (response.status === 503) {
+                throw new Error('iNaturalist API is currently unavailable. Please try again later.');
+            }
             throw new Error('Network response was not ok');
         }
         const data = await response.json();
@@ -46,7 +60,7 @@ async function searchiNaturalist(term, page) {
         continueSearchButton.classList.remove('hidden');
     } catch (error) {
         console.error("Error fetching data:", error);
-        resultsDiv.innerHTML += "<p>Error fetching data from iNaturalist. Please try again later.</p>";
+        resultsDiv.innerHTML += `<p>${error.message}</p>`;
         resultsDiv.classList.remove("hidden");
     } finally {
         showLoading(false);
