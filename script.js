@@ -95,27 +95,42 @@ function createPostcard(commonName, scientificName, imageUrl) {
     const ctx = canvas.getContext('2d');
     const image = new Image();
     image.crossOrigin = 'anonymous';
-    img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height + 50; // Add space for text
-        ctx.drawImage(img, 0, 0);
+    image.onload = () => {
+        canvas.width = 600;
+        canvas.height = 400;
+        
+      // Transparent background - no fillRect needed
 
-        ctx.font = '16px sans-serif';
-        ctx.fillStyle = 'black';
-        ctx.fillText(commonName, 10, img.height + 25);
-        ctx.fillText(scientificName, 10, img.height + 45);
+      const aspectRatio = image.width / image.height;
+      let drawWidth = canvas.width * 0.7;
+      let drawHeight = drawWidth / aspectRatio;
+      if (drawHeight > canvas.height * 0.7) {
+          drawHeight = canvas.height * 0.7;
+          drawWidth = drawHeight * aspectRatio;
+      }
+      const x = (canvas.width - drawWidth) / 2;
+      const y = (canvas.height - drawHeight) / 2;
 
+
+      ctx.drawImage(image, x, y, drawWidth, drawHeight); // Draw image directly, no background fill
+
+      // Draw text
+      ctx.fillStyle = '#333333';
+      ctx.font = 'bold 28px Roboto, Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(commonName, canvas.width / 2, canvas.height - 350);
+      ctx.font = 'italic 20px Roboto, Arial';
+      ctx.fillText(scientificName, canvas.width / 2, canvas.height - 30);
+
+        // Create download link
+        const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
-        link.href = canvas.toDataURL('image/png');
-        link.download = `${commonName}.png`;
+        link.download = `${commonName.replace(/\s+/g, '_')}_postcard.png`;
+        link.href = dataUrl;
         link.click();
     };
-
-    img.src = photoUrl;
-
-
+    image.src = imageUrl;
 }
-
 
 function showLoading(isLoading) {
     loadingDiv.classList.toggle('hidden', !isLoading);
