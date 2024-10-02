@@ -1,41 +1,97 @@
+// DOM elements
 const searchInput = document.getElementById('search');
 const searchButton = document.getElementById('searchButton');
 const resultsDiv = document.getElementById('results');
 const loadingDiv = document.getElementById('loading');
 const continueSearchButton = document.getElementById('continueSearch');
+const customSelect = document.querySelector('.custom-select');
+const selectSelected = customSelect ? customSelect.querySelector('.select-selected') : null;
+const selectItems = customSelect ? customSelect.querySelector('.select-items') : null;
 
+// Variables
 let currentPage = 1;
 let currentSearchTerm = '';
+let currentRankLevel = 0;
 let lastRequestTime = 0;
 
-searchButton.addEventListener('click', () => performSearch(true));
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        performSearch(true);
-    }
-});
-continueSearchButton.addEventListener('click', () => performSearch(false));
+// Error checking
+if (!searchInput || !searchButton || !resultsDiv || !loadingDiv || !continueSearchButton || !customSelect || !selectSelected || !selectItems) {
+    console.error('One or more required DOM elements are missing');
+}
+
+// Custom dropdown functionality
+if (selectSelected && selectItems) {
+    selectSelected.addEventListener('click', function(e) {
+        e.stopPropagation();
+        selectItems.classList.toggle('select-hide');
+        this.classList.toggle('select-arrow-active');
+    });
+
+    selectItems.addEventListener('click', function(e) {
+        if (e.target.tagName === 'DIV') {
+            selectSelected.innerHTML = e.target.innerHTML;
+            currentRankLevel = parseInt(e.target.getAttribute('data-value'));
+            this.classList.add('select-hide');
+        }
+    });
+
+    document.addEventListener('click', function() {
+        selectItems.classList.add('select-hide');
+        selectSelected.classList.remove('select-arrow-active');
+    });
+}
+
+// Event listeners
+if (searchButton) {
+    searchButton.addEventListener('click', () => performSearch(true));
+}
+
+if (searchInput) {
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            performSearch(true);
+        }
+    });
+}
+
+if (continueSearchButton) {
+    continueSearchButton.addEventListener('click', () => performSearch(false));
+}
 
 function performSearch(newSearch) {
+    if (!searchInput) return;
     const searchTerm = searchInput.value.trim();
+    
     if (searchTerm) {
         if (newSearch) {
             currentPage = 1;
             currentSearchTerm = searchTerm;
+            if (resultsDiv) resultsDiv.innerHTML = "";
         } else {
             currentPage++;
         }
-        searchiNaturalist(currentSearchTerm, currentPage);
+        searchiNaturalist(currentSearchTerm, currentRankLevel, currentPage);
     }
 }
 
-async function searchiNaturalist(term, page) {
+async function searchiNaturalist(term, rankLevel, page) {
+    if (!loadingDiv || !continueSearchButton || !resultsDiv) return;
+
     showLoading(true);
-    if (page === 1) {
-        resultsDiv.classList.add("hidden");
-        resultsDiv.innerHTML = "";
+    let apiUrl = new URL('https://api.inaturalist.org/v1/taxa');
+    let params = new URLSearchParams({
+        q: term,
+        per_page: 5,
+        page: page,
+        quality_grade: 'research',
+        identifications: 'any'
+    });
+
+    if (rankLevel > 0) {
+        params.append('rank_level', rankLevel);
     }
-    const apiUrl = `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(term)}&per_page=5&page=${page}`;
+
+    apiUrl.search = params.toString();
 
     // Implement rate limiting
     const now = Date.now();
@@ -57,7 +113,7 @@ async function searchiNaturalist(term, page) {
         }
         const data = await response.json();
         displayResults(data.results, page === 1);
-        continueSearchButton.classList.remove('hidden');
+        continueSearchButton.classList.toggle('hidden', data.results.length === 0);
     } catch (error) {
         console.error("Error fetching data:", error);
         resultsDiv.innerHTML += `<p>${error.message}</p>`;
@@ -68,6 +124,8 @@ async function searchiNaturalist(term, page) {
 }
 
 function displayResults(results, clearPrevious) {
+    if (!resultsDiv) return;
+
     if (clearPrevious) {
         resultsDiv.innerHTML = "";
     }
@@ -75,7 +133,7 @@ function displayResults(results, clearPrevious) {
 
     if (results.length === 0) {
         resultsDiv.innerHTML += "<p>No results found.</p>";
-        continueSearchButton.classList.add('hidden');
+        if (continueSearchButton) continueSearchButton.classList.add('hidden');
         return;
     }
 
@@ -83,6 +141,7 @@ function displayResults(results, clearPrevious) {
         const commonName = result.preferred_common_name || 'No common name';
         const scientificName = result.name;
         const photoUrl = result.default_photo?.medium_url || 'https://via.placeholder.com/200x200?text=No+Image';
+        const rank = result.rank || 'Unknown rank';
 
         const speciesDiv = document.createElement('div');
         speciesDiv.classList.add('species');
@@ -91,18 +150,27 @@ function displayResults(results, clearPrevious) {
             <div class="species-info">
                 <h3>${commonName}</h3>
                 <p><em>${scientificName}</em></p>
+                <p>Rank: ${rank}</p>
                 <button class="download-btn">Download Postcard</button>
             </div>
         `;
 
         speciesDiv.querySelector('.download-btn').addEventListener('click', (e) => {
             e.stopPropagation();
-            createPostcard(commonName, scientificName, photoUrl);
+            createPostcard(commonName, scientificName, photoUrl, rank);
         });
 
         resultsDiv.appendChild(speciesDiv);
     });
 }
+
+function showLoading(isLoading) {
+    if (loadingDiv) loadingDiv.classList.toggle('hidden', !isLoading);
+    if (searchButton) searchButton.disabled = isLoading;
+    if (continueSearchButton) continueSearchButton.disabled = isLoading;
+}
+
+// The createPostcard function remains unchanged
 
 function createPostcard(commonName, scientificName, imageUrl) {
     const canvas = document.createElement('canvas');
