@@ -6,33 +6,7 @@ const continueSearchButton = document.getElementById('continueSearch');
 
 let currentPage = 1;
 let currentSearchTerm = '';
-let currentCategories = [];
 let lastRequestTime = 0;
-
-// Custom dropdown functionality
-const customSelect = document.querySelector('.custom-select');
-const selectSelected = customSelect.querySelector('.select-selected');
-const selectItems = customSelect.querySelector('.select-items');
-
-selectSelected.addEventListener('click', function(e) {
-    e.stopPropagation();
-    this.nextSibling.classList.toggle('select-hide');
-    this.classList.toggle('select-arrow-active');
-});
-
-selectItems.addEventListener('click', function(e) {
-    if (e.target.tagName === 'DIV') {
-        selectSelected.innerHTML = e.target.innerHTML;
-        let selectedValue = e.target.getAttribute('data-value');
-        currentCategories = selectedValue === 'All' ? [] : [selectedValue];
-        this.classList.add('select-hide');
-    }
-});
-
-document.addEventListener('click', function(e) {
-    selectItems.classList.add('select-hide');
-    selectSelected.classList.remove('select-arrow-active');
-});
 
 searchButton.addEventListener('click', () => performSearch(true));
 searchInput.addEventListener('keypress', (e) => {
@@ -44,37 +18,24 @@ continueSearchButton.addEventListener('click', () => performSearch(false));
 
 function performSearch(newSearch) {
     const searchTerm = searchInput.value.trim();
-    
     if (searchTerm) {
         if (newSearch) {
             currentPage = 1;
             currentSearchTerm = searchTerm;
-            resultsDiv.innerHTML = "";
         } else {
             currentPage++;
         }
-        searchiNaturalist(currentSearchTerm, currentCategories, currentPage);
+        searchiNaturalist(currentSearchTerm, currentPage);
     }
 }
 
-async function searchiNaturalist(term, categories, page) {
+async function searchiNaturalist(term, page) {
     showLoading(true);
-    let apiUrl = new URL('https://api.inaturalist.org/v1/taxa');
-    let params = new URLSearchParams({
-        q: term,
-        per_page: 5,
-        page: page,
-        quality_grade: 'research',
-        identifications: 'any'
-    });
-
-    categories.forEach(category => {
-        if (category !== 'All') {
-            params.append('iconic_taxa[]', category);
-        }
-    });
-
-    apiUrl.search = params.toString();
+    if (page === 1) {
+        resultsDiv.classList.add("hidden");
+        resultsDiv.innerHTML = "";
+    }
+    const apiUrl = `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(term)}&per_page=5&page=${page}`;
 
     // Implement rate limiting
     const now = Date.now();
@@ -96,7 +57,7 @@ async function searchiNaturalist(term, categories, page) {
         }
         const data = await response.json();
         displayResults(data.results, page === 1);
-        continueSearchButton.classList.toggle('hidden', data.results.length === 0);
+        continueSearchButton.classList.remove('hidden');
     } catch (error) {
         console.error("Error fetching data:", error);
         resultsDiv.innerHTML += `<p>${error.message}</p>`;
@@ -122,7 +83,6 @@ function displayResults(results, clearPrevious) {
         const commonName = result.preferred_common_name || 'No common name';
         const scientificName = result.name;
         const photoUrl = result.default_photo?.medium_url || 'https://via.placeholder.com/200x200?text=No+Image';
-        const category = result.iconic_taxon_name || 'Unknown';
 
         const speciesDiv = document.createElement('div');
         speciesDiv.classList.add('species');
@@ -131,21 +91,20 @@ function displayResults(results, clearPrevious) {
             <div class="species-info">
                 <h3>${commonName}</h3>
                 <p><em>${scientificName}</em></p>
-                <p>Category: ${category}</p>
                 <button class="download-btn">Download Postcard</button>
             </div>
         `;
 
         speciesDiv.querySelector('.download-btn').addEventListener('click', (e) => {
             e.stopPropagation();
-            createPostcard(commonName, scientificName, photoUrl, category);
+            createPostcard(commonName, scientificName, photoUrl);
         });
 
         resultsDiv.appendChild(speciesDiv);
     });
 }
 
-function createPostcard(commonName, scientificName, imageUrl, category) {
+function createPostcard(commonName, scientificName, imageUrl) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const image = new Image();
@@ -183,16 +142,14 @@ function createPostcard(commonName, scientificName, imageUrl, category) {
         ctx.fillStyle = '#333333';
         ctx.font = 'bold 28px Roboto, Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(commonName, canvas.width / 2, canvas.height - 80);
+        ctx.fillText(commonName, canvas.width / 2, canvas.height - 350);
         ctx.font = 'italic 20px Roboto, Arial';
-        ctx.fillText(scientificName, canvas.width / 2, canvas.height - 50);
-        ctx.font = '16px Roboto, Arial';
-        ctx.fillText(`Category: ${category}`, canvas.width / 2, canvas.height - 20);
+        ctx.fillText(scientificName, canvas.width / 2, canvas.height - 30);
         
         // Create download link
         const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
-        link.download = `${commonName.replace(/\s+/g, '_')}_card.png`;
+        link.download = `${commonName.replace(/\s+/g, '_')}_postcard.png`;
         link.href = dataUrl;
         link.click();
     };
