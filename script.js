@@ -113,11 +113,59 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function createPostcard(commonName, scientificName, imageUrl, rank) {
-        // Implement postcard creation logic here
-        console.log('Creating postcard for:', commonName, scientificName, rank);
+    function createPostcard(commonName, scientificName, imageUrl, category) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const image = new Image();
+        image.crossOrigin = 'anonymous';
+        image.onload = () => {
+            canvas.width = 600;
+            canvas.height = 400;
+            
+            // Draw background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw image
+            const aspectRatio = image.width / image.height;
+            let drawWidth = canvas.width * 0.7;
+            let drawHeight = drawWidth / aspectRatio;
+            if (drawHeight > canvas.height * 0.7) {
+                drawHeight = canvas.height * 0.7;
+                drawWidth = drawHeight * aspectRatio;
+            }
+            const x = (canvas.width - drawWidth) / 2;
+            const y = (canvas.height - drawHeight) / 2;
+            
+            // Add a subtle shadow to the image
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 10;
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x, y, drawWidth, drawHeight);
+            ctx.drawImage(image, x, y, drawWidth, drawHeight);
+            ctx.shadowColor = 'transparent';
+            
+            // Draw text
+            ctx.fillStyle = '#333333';
+            ctx.font = 'bold 28px Roboto, Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(commonName, canvas.width / 2, canvas.height - 355);
+            ctx.font = 'italic 20px Roboto, Arial';
+            ctx.fillText(scientificName, canvas.width / 2, canvas.height - 25);
+                       
+            // Create download link
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = `${commonName.replace(/\s+/g, '_')}_postcard.png`;
+            link.href = dataUrl;
+            link.click();
+            console.log('Creating postcard for:', commonName, scientificName);
+        };
+        image.src = imageUrl;
     }
-
+    
     function showLoading(isLoading) {
         loadingDiv.classList.toggle('hidden', !isLoading);
         searchButton.disabled = isLoading;
