@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function createPostcard(commonName, scientificName, imageUrl, category) {
+    function createPostcard(commonName, scientificName, imageUrl) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const image = new Image();
