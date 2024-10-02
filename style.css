@@ -28,9 +28,9 @@ h1 {
 
 .search-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     margin-bottom: 20px;
-    flex-wrap: wrap;
 }
 
 #search {
@@ -43,15 +43,59 @@ h1 {
     font-size: 16px;
 }
 
-#categoryFilter {
-    padding: 12px;
-    border: 1px solid #cccccc;
-    border-radius: 24px;
+.custom-select {
+    position: relative;
     width: 100%;
-    max-width: 200px;
+    max-width: 300px;
     margin-bottom: 10px;
-    font-size: 16px;
+}
+
+.select-selected {
     background-color: #ffffff;
+    border: 1px solid #cccccc;
+    padding: 12px;
+    border-radius: 24px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.select-selected:after {
+    position: absolute;
+    content: "";
+    top: 14px;
+    right: 10px;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+    border-color: #333 transparent transparent transparent;
+}
+
+.select-items {
+    position: absolute;
+    background-color: #ffffff;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #cccccc;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.select-items div {
+    padding: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.select-items div:hover, .same-as-selected {
+    background-color: #f1f1f1;
+}
+
+.select-hide {
+    display: none;
 }
 
 #searchButton, #continueSearch {
@@ -63,6 +107,8 @@ h1 {
     cursor: pointer;
     font-size: 16px;
     transition: background-color 0.3s;
+    width: 100%;
+    max-width: 300px;
 }
 
 #searchButton:hover, #continueSearch:hover {
@@ -132,12 +178,13 @@ h1 {
 
 @media (min-width: 768px) {
     .search-container {
-        flex-wrap: nowrap;
+        flex-direction: row;
+        justify-content: center;
     }
 
-    #search, #categoryFilter {
-        margin-bottom: 0;
+    #search, .custom-select, #searchButton {
         margin-right: 10px;
+        margin-bottom: 0;
     }
 
     .species {

@@ -1,5 +1,4 @@
 const searchInput = document.getElementById('search');
-const categoryFilter = document.getElementById('categoryFilter');
 const searchButton = document.getElementById('searchButton');
 const resultsDiv = document.getElementById('results');
 const loadingDiv = document.getElementById('loading');
@@ -7,8 +6,33 @@ const continueSearchButton = document.getElementById('continueSearch');
 
 let currentPage = 1;
 let currentSearchTerm = '';
-let currentCategory = '';
+let currentCategories = [];
 let lastRequestTime = 0;
+
+// Custom dropdown functionality
+const customSelect = document.querySelector('.custom-select');
+const selectSelected = customSelect.querySelector('.select-selected');
+const selectItems = customSelect.querySelector('.select-items');
+
+selectSelected.addEventListener('click', function(e) {
+    e.stopPropagation();
+    this.nextSibling.classList.toggle('select-hide');
+    this.classList.toggle('select-arrow-active');
+});
+
+selectItems.addEventListener('click', function(e) {
+    if (e.target.tagName === 'DIV') {
+        selectSelected.innerHTML = e.target.innerHTML;
+        let selectedValue = e.target.getAttribute('data-value');
+        currentCategories = selectedValue === 'All' ? [] : [selectedValue];
+        this.classList.add('select-hide');
+    }
+});
+
+document.addEventListener('click', function(e) {
+    selectItems.classList.add('select-hide');
+    selectSelected.classList.remove('select-arrow-active');
+});
 
 searchButton.addEventListener('click', () => performSearch(true));
 searchInput.addEventListener('keypress', (e) => {
@@ -20,27 +44,37 @@ continueSearchButton.addEventListener('click', () => performSearch(false));
 
 function performSearch(newSearch) {
     const searchTerm = searchInput.value.trim();
-    const category = categoryFilter.value;
+    
     if (searchTerm) {
         if (newSearch) {
             currentPage = 1;
             currentSearchTerm = searchTerm;
-            currentCategory = category;
-            resultsDiv.innerHTML = ""; // Clear previous results on new search
+            resultsDiv.innerHTML = "";
         } else {
             currentPage++;
         }
-        searchiNaturalist(currentSearchTerm, currentCategory, currentPage);
+        searchiNaturalist(currentSearchTerm, currentCategories, currentPage);
     }
 }
 
-async function searchiNaturalist(term, category, page) {
+async function searchiNaturalist(term, categories, page) {
     showLoading(true);
-    let apiUrl = `https://api.inaturalist.org/v1/taxa?q=${encodeURIComponent(term)}&per_page=5&page=${page}`;
-    
-    if (category && category !== "All Categories") {
-        apiUrl += `&iconic_taxa=${encodeURIComponent(category)}`;
-    }
+    let apiUrl = new URL('https://api.inaturalist.org/v1/taxa');
+    let params = new URLSearchParams({
+        q: term,
+        per_page: 5,
+        page: page,
+        quality_grade: 'research',
+        identifications: 'any'
+    });
+
+    categories.forEach(category => {
+        if (category !== 'All') {
+            params.append('iconic_taxa[]', category);
+        }
+    });
+
+    apiUrl.search = params.toString();
 
     // Implement rate limiting
     const now = Date.now();
