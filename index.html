@@ -7,13 +7,21 @@
     <link rel="stylesheet" href="./style.css">
     <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#4CAF50">
-    <link rel="apple-touch-icon" href="./icon-192x192.jpg">
+    <link rel="apple-touch-icon" href="./icon-192x192.png">
 </head>
 <body>
     <div class="container">
         <h1>iNaturalist Explorer</h1>
         <div class="search-container">
             <input type="text" id="search" placeholder="Search for a species..." aria-label="Search for a species">
+            <select id="categoryFilter" aria-label="Select category">
+                <option value="">All Categories</option>
+                <option value="Animalia">Animals</option>
+                <option value="Plantae">Plants</option>
+                <option value="Fungi">Fungi</option>
+                <option value="Chromista">Chromista</option>
+                <option value="Protozoa">Protozoa</option>
+            </select>
             <button id="searchButton">Search</button>
         </div>
         <div id="loading" class="hidden">Searching...</div>

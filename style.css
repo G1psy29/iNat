@@ -1,25 +1,17 @@
-:root {
-    --primary-color: #4CAF50;
-    --secondary-color: #008CBA;
-    --background-color: #f0f0f0;
-    --card-background: #ffffff;
-    --text-color: #333333;
-}
-
 body {
     font-family: 'Roboto', 'Arial', sans-serif;
     display: flex;
     justify-content: center;
     align-items: flex-start;
     min-height: 100vh;
-    background-color: var(--background-color);
+    background-color: #f0f0f0;
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
 }
 
 .container {
-    background-color: var(--card-background);
+    background-color: #ffffff;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -30,7 +22,7 @@ body {
 
 h1 {
     margin-bottom: 20px;
-    color: var(--text-color);
+    color: #333333;
     font-size: 24px;
 }
 
@@ -43,7 +35,7 @@ h1 {
 
 #search {
     padding: 12px;
-    border: 1px solid #ccc;
+    border: 1px solid #cccccc;
     border-radius: 24px;
     width: 100%;
     max-width: 300px;
@@ -51,9 +43,20 @@ h1 {
     font-size: 16px;
 }
 
+#categoryFilter {
+    padding: 12px;
+    border: 1px solid #cccccc;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 200px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    background-color: #ffffff;
+}
+
 #searchButton, #continueSearch {
     padding: 12px 24px;
-    background-color: var(--primary-color);
+    background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 24px;
@@ -83,10 +86,10 @@ h1 {
     flex-direction: column;
     align-items: center;
     margin-bottom: 20px;
-    border: 1px solid #ddd;
+    border: 1px solid #dddddd;
     padding: 15px;
     border-radius: 12px;
-    background-color: var(--card-background);
+    background-color: #ffffff;
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
@@ -108,7 +111,7 @@ h1 {
 }
 
 .download-btn {
-    background-color: var(--secondary-color);
+    background-color: #008CBA;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -132,7 +135,7 @@ h1 {
         flex-wrap: nowrap;
     }
 
-    #search {
+    #search, #categoryFilter {
         margin-bottom: 0;
         margin-right: 10px;
     }
