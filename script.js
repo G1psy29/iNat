@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             speciesDiv.querySelector('.download-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
-                createPostcard(commonName, scientificName, photoUrl, rank);
+                createPostcard(commonName, scientificName, photoUrl);
             });
 
             resultsDiv.appendChild(speciesDiv);
